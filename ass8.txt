@@ -1,0 +1,140 @@
+import numpy as np
+import pandas as pd
+from sklearn_extra.cluster import KMedoids
+from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import load_iris
+import matplotlib.pyplot as plt
+
+data = load_iris()
+X = pd.DataFrame(data.data, columns=data.feature_names)
+
+# Optionally, standardize the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Define number of clusters
+n_clusters = 3
+
+# Implement K-Medoids clustering
+
+kmedoids = KMedoids(n_clusters=n_clusters, random_state=42)
+kmedoids.fit(X_scaled)
+
+# Get cluster labels and medoids
+labels = kmedoids.labels_
+medoid_indices = kmedoids.medoid_indices_
+medoids = X_scaled[medoid_indices] # Get actual medoid values from scaled data
+
+# Output results
+print("Cluster labels:", labels)
+print("Medoid indices:", medoid_indices)
+print("Medoid values:", medoids)
+
+# Visualize clusters
+plt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=labels, cmap='viridis', marker='o')
+plt.scatter(medoids[:, 0], medoids[:, 1], c='red', marker='X', s=200) # Medoids
+plt.title('K-Medoids Clustering')
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.show()
+
+
+________________________________________________________________________
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Points dataset
+points = np.array([
+    [0.1, 0.6],
+    [0.2, 0.3],
+    [0.15, 0.71],
+    [0.08, 0.9],
+    [0.25, 0.5],
+    [0.24, 0.1],
+    [0.16, 0.85],
+    [0.3, 0.2]
+])
+
+# Initial medoids
+medoid1 = np.array([0.1, 0.6])
+medoid2 = np.array([0.3, 0.2])
+
+# Manhattan distance function
+def manhattan_distance(point, medoid):
+    return np.sum(np.abs(point - medoid))
+
+# Number of iterations
+num_iterations = 100
+
+# K-Medoids clustering
+for _ in range(num_iterations):
+    cluster1 = []
+    cluster2 = []
+
+    # Assign points to the nearest medoid
+    for point in points:
+        distance_to_m1 = manhattan_distance(point, medoid1)
+        distance_to_m2 = manhattan_distance(point, medoid2)
+
+        if distance_to_m1 < distance_to_m2:
+            cluster1.append(point)
+        else:
+            cluster2.append(point)
+
+    # Update medoids
+    new_medoid1 = min(cluster1, key=lambda p: sum(manhattan_distance(p, other) for other in cluster1)) if cluster1 else medoid1
+    new_medoid2 = min(cluster2, key=lambda p: sum(manhattan_distance(p, other) for other in cluster2)) if cluster2 else medoid2
+
+    # Check for convergence
+    if np.array_equal(new_medoid1, medoid1) and np.array_equal(new_medoid2, medoid2):
+        break
+
+    medoid1 = new_medoid1
+    medoid2 = new_medoid2
+
+# Print final clusters and results
+print("Final clusters:")
+print("Cluster 1:", cluster1)
+print("Cluster 2:", cluster2)
+
+# Determine cluster of point P6
+point_P6 = np.array([0.24, 0.1])
+distance_to_m1_P6 = manhattan_distance(point_P6, medoid1)
+distance_to_m2_P6 = manhattan_distance(point_P6, medoid2)
+cluster_P6 = 1 if distance_to_m1_P6 < distance_to_m2_P6 else 2
+print("\na) Cluster of P6:", cluster_P6)
+
+# Population of cluster 2
+population_cluster2 = len(cluster2)
+print("\nb) Population of cluster around m2:", population_cluster2)
+
+# Updated medoids
+print("\nc) Updated value of m1:", medoid1)
+print(" Updated value of m2:", medoid2)
+
+# Plotting results
+plt.figure(figsize=(8, 6))
+cluster1 = np.array(cluster1)
+cluster2 = np.array(cluster2)
+
+# Plot clusters
+if cluster1.size > 0:
+    plt.scatter(cluster1[:, 0], cluster1[:, 1], color='blue', label='Cluster 1')
+if cluster2.size > 0:
+    plt.scatter(cluster2[:, 0], cluster2[:, 1], color='orange', label='Cluster 2')
+
+# Plot medoids and point P6
+plt.scatter(medoid1[0], medoid1[1], color='red', marker='X', s=200, label='Medoid 1')
+plt.scatter(medoid2[0], medoid2[1], color='green', marker='X', s=200, label='Medoid 2')
+plt.scatter(point_P6[0], point_P6[1], color='purple', marker='o', s=100, label='Point P6')
+
+# Plot settings
+plt.title('K-Medoids Clustering')
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.legend()
+plt.grid()
+plt.xlim(0, 0.4)
+plt.ylim(0, 1)
+plt.show()

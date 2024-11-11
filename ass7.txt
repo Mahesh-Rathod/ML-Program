@@ -1,0 +1,149 @@
+import pandas as pd
+from sklearn.datasets import load_iris
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+feature_names = iris.feature_names
+
+# Scale the features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Elbow method to determine the optimal number of clusters
+inertia = []
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(X_scaled)
+    inertia.append(kmeans.inertia_)
+
+# Plot the elbow graph
+plt.figure(figsize=(8, 4))
+plt.plot(range(1, 11), inertia, marker='o')
+plt.title('Elbow Method for Optimal k')
+plt.xlabel('Number of Clusters')
+plt.ylabel('Inertia')
+plt.show()
+
+# Apply K-Means clustering with optimal clusters (e.g., 3 for iris dataset)
+kmeans = KMeans(n_clusters=3, random_state=42)
+kmeans.fit(X_scaled)
+labels = kmeans.labels_
+centroids = kmeans.cluster_centers_
+
+# Calculate the silhouette score
+silhouette_avg = silhouette_score(X_scaled, labels)
+print(f'Silhouette Score: {silhouette_avg}')
+
+# Plot the clustering results
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x=X_scaled[:, 0], y=X_scaled[:, 1], hue=labels, palette='Set1', legend='full')
+plt.scatter(centroids[:, 0], centroids[:, 1], s=300, c='red', marker='X')
+plt.title('K-Means Clustering Results')
+plt.xlabel(feature_names[0])
+plt.ylabel(feature_names[1])
+plt.show()
+
+
+_______________________________________________________________________________________________________________________________
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define points and initial centroids
+points = np.array([[0.1, 0.6],
+                   [0.2, 0.3],
+                   [0.15, 0.71],
+                   [0.08, 0.9],
+                   [0.25, 0.5],
+                   [0.24, 0.1],
+                   [0.16, 0.85],
+                   [0.3, 0.2]])
+
+centroid1 = np.array([0.1, 0.6])
+centroid2 = np.array([0.3, 0.2])
+
+# Function to calculate Euclidean distance
+def euclidean_distance(point, centroid):
+    return np.sqrt(np.sum((point - centroid)**2))
+
+num_iterations = 100 
+
+for _ in range(num_iterations):
+    cluster1 = []
+    cluster2 = []
+
+    for point in points:
+        distance_to_c1 = euclidean_distance(point, centroid1)
+        distance_to_c2 = euclidean_distance(point, centroid2)
+
+        if distance_to_c1 < distance_to_c2:
+            cluster1.append(point)
+        else:
+            cluster2.append(point)
+
+    new_centroid1 = np.mean(cluster1, axis=0) if cluster1 else centroid1
+    new_centroid2 = np.mean(cluster2, axis=0) if cluster2 else centroid2
+
+    if np.array_equal(new_centroid1, centroid1) and np.array_equal(new_centroid2, centroid2):
+        break
+
+    centroid1 = new_centroid1
+    centroid2 = new_centroid2
+
+print("Final clusters:")
+print("Cluster 1:", cluster1)
+print("Cluster 2:", cluster2)
+
+# Determine the cluster of point P6
+point_P6 = np.array([0.24, 0.1])
+distance_to_c1_P6 = euclidean_distance(point_P6, centroid1)
+distance_to_c2_P6 = euclidean_distance(point_P6, centroid2)
+cluster_P6 = 1 if distance_to_c1_P6 < distance_to_c2_P6 else 2
+print("\na) Cluster of P6:", cluster_P6)
+
+# Population of cluster 2
+population_cluster2 = len(cluster2)
+print("\nb) Population of cluster around m2:", population_cluster2)
+
+print("\nc) Updated value of m1:", centroid1)
+print(" Updated value of m2:", centroid2)
+
+# Plotting the clusters
+plt.figure(figsize=(8, 6))
+
+# Convert clusters to arrays for plotting
+cluster1 = np.array(cluster1)
+cluster2 = np.array(cluster2)
+
+# Plot the points in cluster 1
+if cluster1.size > 0:
+    plt.scatter(cluster1[:, 0], cluster1[:, 1], color='blue', label='Cluster 1')
+
+# Plot the points in cluster 2
+if cluster2.size > 0:
+    plt.scatter(cluster2[:, 0], cluster2[:, 1], color='orange', label='Cluster 2')
+
+# Plot centroids
+plt.scatter(centroid1[0], centroid1[1], color='red', marker='X', s=200, label='Centroid 1')
+plt.scatter(centroid2[0], centroid2[1], color='green', marker='X', s=200, label='Centroid 2')
+
+# Plot point P6
+plt.scatter(point_P6[0], point_P6[1], color='purple', marker='o', s=100, label='Point P6')
+
+# Adding labels and legend
+plt.title('K-Means Clustering')
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.legend()
+plt.grid()
+plt.xlim(0, 0.4)
+plt.ylim(0, 1)
+plt.show()
+

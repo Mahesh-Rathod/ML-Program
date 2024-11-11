@@ -1,0 +1,105 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score,classification_report
+from sklearn.naive_bayes import GaussianNB
+
+print("Dataset: \n")
+url=r'Tennis.csv'
+dataset = pd.read_csv(url)
+
+X = dataset[['outlook','temp','humidity','windy']]
+Y = dataset['play']
+
+X = pd.get_dummies(X)
+
+
+print(dataset)
+
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=20)
+
+print("\nTraining Dataset Independant Variable:\n")
+print(X_train)
+print("\nTraining Dataset Dependant Variable:\n")
+
+
+print(Y_train)
+print("\nTesting Dataset Independant Variable:\n")
+print(X_test)
+print("\nTesting Dataset Dependant Variable:\n")
+print(Y_test)
+
+nbc = GaussianNB()
+nbc.fit(X_train, Y_train)
+
+Y_pred = nbc.predict(X_test)
+
+
+print("\n\n\t\t\tClassification Report")
+print(classification_report(Y_test, Y_pred))
+___________________________________________________________________________________________________________________________________
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+data = {
+    'Outlook': ['Sunny', 'Sunny', 'Overcast', 'Rain', 'Rain', 'Rain', 'Overcast', 'Sunny', 'Sunny', 'Rain', 'Sunny', 'Overcast', 'Overcast', 'Rain'],
+    'Temperature': ['Hot', 'Hot', 'Hot', 'Mild', 'Cool', 'Cool', 'Mild', 'Mild', 'Sunny', 'Mild', 'Cool', 'Cool', 'Mild', 'Mild'],
+    'Humidity': ['High', 'High', 'High', 'High', 'Normal', 'Normal', 'Normal', 'High', 'Normal', 'Normal', 'High', 'Normal', 'Normal', 'High'],
+    'Windy': [False, True, False, False, False, True, True, False, False, True, True, True, False, True],
+    'Play': ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']
+}
+
+
+df = pd.DataFrame(data)
+print("Step 1: Dataset Loaded")
+print(df)
+
+df_encoded = pd.get_dummies(df, columns=['Outlook', 'Temperature', 'Humidity'], drop_first=True)
+print("\nStep 2: Data Preprocessed using One-Hot Encoding")
+print(df_encoded)
+
+
+X = df_encoded.drop('Play', axis=1)
+y = df_encoded['Play'].map({'Yes': 1, 'No': 0}) 
+print("\nStep 3: Features and Labels Prepared")
+print("Features (X):")
+print(X)
+print("Labels (y):")
+print(y)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+print("\nStep 4: Data Split into Training and Testing Sets")
+print("Training Features (X_train):")
+print(X_train)
+print("Testing Features (X_test):")
+print(X_test)
+print("Training Labels (y_train):")
+print(y_train)
+print("Testing Labels (y_test):")
+print(y_test)
+
+model = GaussianNB()
+model.fit(X_train, y_train)
+print("\nStep 5: Naïve Bayes Classifier Trained")
+
+
+y_pred = model.predict(X_test)
+print("\nStep 6: Predictions Made on Test Set")
+print("Predicted Labels (y_pred):")
+print(y_pred)
+
+
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+class_report = classification_report(y_test, y_pred)
+
+print("\nStep 7: Classifier Performance Evaluation")
+print(f"Accuracy: {accuracy:.2f}")
+print("Confusion Matrix:")
+print(conf_matrix)
+print("Classification Report:")
+print(class_report)
