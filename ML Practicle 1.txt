@@ -1,0 +1,771 @@
+	
+-----------------------------------Assignment No-01------------------------------------
+
+Title: Perform the following operation using Python on the give dataset 
+1)	Importing Libraries 	2) Importing the dataset		3) Handling of missing data
+4) Handling Categorical data   5) Splitting the dataset into the training and testing datasets 	6) Feature Scaling
+Ans: -
+import os
+import pandas as pd  
+from sklearn.preprocessing import StandardScaler 
+from sklearn.preprocessing import LabelEncoder  # Data encoding
+from sklearn.model_selection import train_test_split  #for spliting data
+
+#Load the data
+file = pd.read_csv("Region_data.csv",na_values=["?"])
+#display the data
+print("Display data")
+print(file)
+print("\n")
+file.info()
+print("\n")
+
+# counts the no. of missing values in each column
+file.isna().sum()
+print(file.isna().sum())
+print("\n")
+missing = file[file.isna().any(axis=1)]
+print(missing)
+print("\n")
+# for discribe the basic information
+print(file.describe())
+print("\n")
+
+#Handle missing data
+file['Age'] = file['Age'].fillna(file["Age"].mean()) #Average
+file.isna().sum()
+print(file)
+print("\n")
+file['Income'] = file['Income'].fillna(file['Income'].median()) #middel value
+file.isna().sum()
+print(file)
+print("\n")
+file['Region'] = file['Region'].fillna(file['Region'].mode()[0]) #most frequent
+file.isna().sum() #gives the count of missing
+print(file)
+print("\n")
+
+#feature scalling
+sc = StandardScaler()
+file[['Age', 'Income']]=sc.fit_transform(file[['Age','Income']])
+print(file)
+print("\n")
+
+# Convert categorical data to numerical
+label = LabelEncoder()
+file['Region'] = label.fit_transform(file['Region'])
+#file['Online Shopper'] = label.fit_transform(file['Region','Online Shopper'])
+
+# Split data into training and testing sets
+X = file[['Age', 'Income']]
+y = file['Region']  #Online Shopper
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+# Create DataFrames for training and testing sets
+train_df = pd.DataFrame({'Age': X_train['Age'], 'Income': X_train['Income'], 'Region': y_train})
+test_df = pd.DataFrame({'Age': X_test['Age'], 'Income': X_test['Income'], 'Region': y_test})
+
+# Display training and testing sets
+print("Training Set:")
+print(train_df.head()) #few row of traning dataset displayed
+print("\nTesting Set:")
+print(test_df.head())
+
+# Display training and testing ratios
+total_samples = len(X_train) + len(X_test)
+train_ratio = len(X_train) / total_samples
+test_ratio = len(X_test) / total_samples
+print(f"Training Set Ratio: {train_ratio:.2%}")
+print(f"Testing Set Ratio: {test_ratio:.2%}")
+
+Output:
+-------------------------------------Assignment No-02---------------------------
+Title:-Principle Componenet Analysis
+	
+import pandas as pd     
+import numpy as np 
+import matplotlib.pyplot as plt   
+from sklearn.decomposition import PCA   # for dimensionality reduction.
+from sklearn.preprocessing import StandardScaler    #For standardizing the data
+from sklearn.preprocessing import LabelEncoder  #For encoding categorical labels into numerical values.
+
+file = pd.read_csv("data2.csv",na_values=["??","###"]) #data loading
+print(file)
+print(file.info())
+
+#checking for missing
+print(file.isna().sum())
+missing=file[file.isna().any(axis=1)]
+print(missing)
+
+#Handling missing
+file["SepalLengthCm"]=file["SepalLengthCm"].fillna(file["SepalLengthCm"].mean())
+file["SepalWidthCm"]=file["SepalWidthCm"].fillna(file["SepalWidthCm"].mean())
+file["PetalLengthCm"]=file["PetalLengthCm"].fillna(file["PetalLengthCm"].mean())
+file["Species"]=file["Species"].fillna(file["Species"].mode())
+print(file.isna().sum())
+
+#label encoding
+label = LabelEncoder()
+file['Species'] = label.fit_transform(file['Species'])  #categorical data into numerical data
+print(file.head())
+
+# Select numerical columns
+num_data = file.select_dtypes(include=[np.number]).columns  #Selects the columns with numerical data for PCA.
+x = file[num_data]
+y = file.Species
+
+# Standardize the data
+sc= StandardScaler()
+x_scaled = sc.fit_transform(x)
+
+#apply PCA
+pca = PCA(n_components = 3)
+x_pca = pca.fit_transform(x_scaled)
+print(x_pca)
+
+# scatter plot for the data visualisation
+plt.figure(figsize=(8,6))
+plt.scatter(x_pca[:, 0], x_pca[:, 1], c=y, cmap='viridis')
+plt.xlabel('PC 1')
+plt.ylabel('PC 2')
+plt.title('PCA of Iris Dataset')
+plt.show()
+
+
+Output:
+ 
+--------------------------------------Assignment No-03-----------------------------
+Title:-Linear Regresion
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+
+file = pd.read_csv("Drive_data.csv")
+print(file)
+print("\n")
+#Checking missing value
+print("Checking missing value")
+print(file.isna().sum())
+
+#Creating dataframe
+
+df= pd.DataFrame(file)
+
+X = df[["hours spent driving"]]
+Y = df[["Risk score"]]
+
+#Spliting the data into testing and tranig categories
+
+x_train, x_test, y_train, y_test = train_test_split(X,Y, test_size=0.1, random_state=42)
+
+# Applying LinearRegression
+model = LinearRegression()
+model.fit(x_train, y_train)
+
+y_Predict = model.predict(x_test)
+
+print("\n")
+print(f"Coefficient (slope): {model.coef_[0]}")
+print(f"Intercept: {model.intercept_}")
+
+plt.figure(figsize=(8,6))
+plt.scatter(X,Y, color='g', label = 'Actual data')
+plt.plot(X, model.predict(X), color ='b', label='Fitted line')
+plt.xlabel("Hours spent driving")
+plt.ylabel("Risk Score")
+plt.title("Linear Regression")
+plt.legend()
+plt.show()
+
+
+Output:
+
+---------------------------------Assignment No-04---------------------------
+Title:-Support vector Machine 
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn. neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import precision_score
+
+file = pd.read_csv("emails.csv")
+print("Initial Data:")
+#print(file)
+
+#identifying & droping non-numeric columns.
+nnc = file.select_dtypes(include=['object']).columns
+file = file.drop(columns = nnc) #droping non-numeric columns
+
+#filtering the columns with values 0 /1(spam/ not spam)
+file = file[file['Prediction'].isin([0,1])]
+print(file)
+
+#spliting features in x & y
+X = file.drop(columns=['Prediction'])  #non prediction values
+y = file['Prediction']      # prediction values (0/1)
+print("Features(X):")
+print(X.head())
+print("feature (y):")
+print(y.head())
+
+#split data set
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.3, random_state=42)
+'''print("Training features(X_train):")
+print(X_train[:5])
+print("Testing features(X_test):")
+print(X_test[:5])'''
+
+#Standardizing the data
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+# Initializing and training the K-Nearest Neighbors model
+k = 5   #consider 5  nearest neighbours
+knn = KNeighborsClassifier(n_neighbors=k)
+knn.fit(X_train, y_train)
+print("Model training complete.\n")
+print("Making predictions on the test set...")
+y_pred = knn.predict(X_test)
+print("Predictions complete.")
+print("Predicted labels (y_pred):")
+print(y_pred[:5])
+print("\nEvaluating the model...")
+accuracy = accuracy_score(y_test, y_pred)       #proportion of correctly predicted instances
+precision = precision_score(y_test, y_pred, pos_label=1)    # ratio of true positive predictions to the total predicted positives.
+report = classification_report(y_test, y_pred)      #  report showing precision, recall, F1-score for each class.
+print(f'Accuracy: {accuracy:.2f}')
+print(f'Precision: {precision:.2f}')
+print('Classification Report:')
+print(report)
+
+Output:
+ 
+ 
+---------------------------------------Assignment No-05-------------------------------
+Title :-Naive Bayes Classifier
+
+
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, precision_score, classification_report
+from sklearn.datasets import make_classification
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+df = pd.read_csv("emails.csv")
+print("Dataset loaded successfully.\n")
+print(df.head())
+# Identifying non-numeric columns...
+nnc = df.select_dtypes(include=['object']).columns
+df = df.drop(columns=nnc)
+# Filtering rows where 'Prediction' column has values 0 or 1
+df = df[df['Prediction'].isin([0, 1])]
+print("\nDataset after filtering:")
+print(df.head())
+# Splitting the data into features and labels...
+X = df.drop(columns=['Prediction'])
+y = df['Prediction']
+print("\nFeatures (X):")
+print(X.head())
+print("\nFeature (y):")
+print(y.head())
+# Splitting the data into training and testing sets...
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+
+# Standardizing the data...
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+# Training SVM model...
+svm_emails = SVC(kernel='rbf', random_state=0)
+svm_emails.fit(X_train, y_train)
+# Making predictions using SVM...
+y_pred_emails = svm_emails.predict(X_test)
+# SVM Classification Report for emails dataset
+print(classification_report(y_test, y_pred_emails))
+accuracy_svm = accuracy_score(y_test, y_pred_emails)
+precision_svm = precision_score(y_test, y_pred_emails, pos_label=1)
+print(f"\nSVM Accuracy: {accuracy_svm:.2f}")
+print(f"Precision: {precision_svm:.2f}")
+# Training KNN model...
+knn_emails = KNeighborsClassifier(n_neighbors=5)
+knn_emails.fit(X_train, y_train)
+y_pred_knn_emails = knn_emails.predict(X_test)
+# KNN Classification Report for emails dataset
+print(classification_report(y_test, y_pred_knn_emails))
+accuracy_knn = accuracy_score(y_test, y_pred_knn_emails)
+precision_knn = precision_score(y_test, y_pred_knn_emails, pos_label=1)
+print(f"\nKNN Accuracy: {accuracy_knn:.2f}")
+print(f"Precision: {precision_knn:.2f}")
+# Performance comparison between KNN and SVM for the emails dataset
+print(f"\nKNN Accuracy: {accuracy_knn:.2f}, Precision: {precision_knn:.2f}")
+print(f"SVM Accuracy: {accuracy_svm:.2f}, Precision: {precision_svm:.2f}")
+# creating synthetic data
+X_synthetic, y_synthetic = make_classification(n_samples=100, n_features=2, n_classes=2, n_redundant=0, n_clusters_per_class=1)
+# spliting data
+X_train_synthetic, X_test_synthetic, y_train_synthetic, y_test_synthetic = train_test_split(X_synthetic, y_synthetic, test_size=0.2, random_state=90)
+sc_synthetic = StandardScaler()
+X_train_synthetic = sc_synthetic.fit_transform(X_train_synthetic)
+X_test_synthetic = sc_synthetic.transform(X_test_synthetic)
+svm_synthetic = SVC(kernel='rbf', random_state=0)
+svm_synthetic.fit(X_train_synthetic, y_train_synthetic)
+y_pred_synthetic = svm_synthetic.predict(X_test_synthetic)
+# data viualization
+def plot_decision_boundaries(X, y, model, title):
+    h = .02  
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+    Z = model.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+    plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.coolwarm)
+    scatter = plt.scatter(X[:, 0], X[:, 1], c=y, edgecolor='k', marker='o', cmap=plt.cm.coolwarm)
+    legend1 = plt.legend(*scatter.legend_elements(), title="Classes")
+    plt.gca().add_artist(legend1)
+    plt.xlim(xx.min(), xx.max())
+    plt.ylim(yy.min(), yy.max())
+    plt.xticks(())
+    plt.yticks(())
+    plt.title(title)
+plt.figure(figsize=(10, 6))
+plot_decision_boundaries(X_test_synthetic, y_test_synthetic, svm_synthetic, 'SVM Decision Boundary for Synthetic Dataset')
+plt.show()
+
+Output:
+
+----------------------------------Assignment No-06------------------------------
+Title:-k-nearest neighbour clasiffier
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+data =pd.read_csv("Tennis_data.csv")
+
+df = pd.DataFrame(data)
+print("Step 1: Dataset Loaded\n")
+print(df)
+
+# Data Preprocessed using One-Hot Encoding
+df_encoded = pd.get_dummies(df, columns=['Outlook', 'Temperature', 'Humidity','Wind'], drop_first=True)
+
+#Spliting Features
+X = df_encoded.drop('Play Tennis', axis=1)
+y = df_encoded['Play Tennis'].map({'Yes': 1, 'No': 0}) 
+
+#Split Data into Training and Testing Sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+print("\nTraining Features (X_train):\n")
+print(X_train)
+print("\nTesting Features (X_test):\n")
+print(X_test)
+print("\nTraining Labels (y_train):")
+print(y_train)
+print("\nTesting Labels (y_test):")
+print(y_test)
+
+#Tranig model using Naive bayes classifier.
+model = GaussianNB()
+model.fit(X_train, y_train)
+print("\nModel Trained............")
+
+
+#Predictions Made on Test Set
+y_pred = model.predict(X_test)
+print("\nPredicted Labels (y_pred):")
+print(y_pred)
+
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+class_report = classification_report(y_test, y_pred)
+
+#Classifier Performance Evaluation
+print(f"\nAccuracy: {accuracy:.2f}")
+print("\nConfusion Matrix:")
+print(conf_matrix)
+print("\nClassification Report:")
+print(class_report)
+
+OUTPUT:
+ 
+---------------------------Assignment No-07-----------------------------
+Title:- k means Clustring 
+
+import numpy as np
+import pandas as pd
+from sklearn.cluster import KMeans
+
+data = pd.read_csv('kmeans.csv')
+# Define the points
+points = data[['x', 'y']].to_numpy()
+
+#K-Means classifier by using in-built function
+print("k-menas algorithm using built-in function.............")
+#initialize kmeans
+init_centroid = np.array([[0.1, 0.6], [0.3,0.2]])
+kmeans = KMeans(n_clusters=2, init=init_centroid, n_init=1, max_iter=5)
+print("\nInitial Centroids...............")
+print("m1:",init_centroid[0])
+print("m2:",init_centroid[1])
+#fit the model to the data
+kmeans.fit(points)
+
+#final centroid
+centroids =kmeans.cluster_centers_
+print("\nFinal centroids...............")
+print("m1:", centroids[0])
+print("m2:", centroids[1])
+
+#cluster assignments
+print("\nCluster assignment.................")
+assignments = kmeans.labels_
+for cluster_num in range(2):
+    cluster_points = points[assignments == cluster_num]
+    print(f"\nCluster{cluster_num +1}:")
+    for point in cluster_points:
+        print(point)
+print("\nK-means algorithm by manual method..............")
+
+# Initial centroids
+m1 = np.array([0.1, 0.6])
+m2 = np.array([0.3, 0.2])
+print("\nInitial Centorids..............")
+print("m1", m1)
+print("m2", m2)
+
+# Function to calculate the Euclidean distance
+def euclidean_distance(point, centroid):
+    return np.sqrt(np.sum((point - centroid) ** 2))
+
+# Function to assign clusters
+def assign_clusters(points, m1, m2):
+    clusters = {1: [], 2: []}
+    for point in points:
+        dist_to_m1 = euclidean_distance(point, m1)
+        dist_to_m2 = euclidean_distance(point, m2)
+        if dist_to_m1 < dist_to_m2:
+            clusters[1].append(point)
+        else:
+            clusters[2].append(point)
+    return clusters
+
+# Function to update centroids
+def update_centroids(clusters):
+    m1 = np.mean(clusters[1], axis=0) if clusters[1] else np.array([0, 0])
+    m2 = np.mean(clusters[2], axis=0) if clusters[2] else np.array([0, 0])
+    return m1, m2
+
+# Main loop for K-Means clustering
+iterations = 5  # Number of iterations for convergence
+for _ in range(iterations):
+    clusters = assign_clusters(points, m1, m2)
+    m1, m2 = update_centroids(clusters)
+
+# Results
+print("\nFinal centroids.................")
+print("m1 (C1):", m1)
+print("m2 (C2):", m2)
+
+# Assignments
+print("\nCluster assignments....................")
+for cluster_num, cluster_points in clusters.items():
+    print(f"\nCluster {cluster_num}:")
+    for point in cluster_points:
+        print(point)
+
+# Answering the questions
+# a) Which cluster does P6 belong to?
+p6 = np.array([0.25, 0.5])
+if euclidean_distance(p6, m1) < euclidean_distance(p6, m2):
+    assigned_cluster_p6 = 1
+else :2
+print(f"\nP6 belongs to Cluster: {assigned_cluster_p6}")
+
+# b) Population of cluster around m2
+population_m2 = len(clusters[2])
+print(f"\nPopulation of cluster around m2 (C2): {population_m2}")
+
+# c) Updated values of m1 and m2
+print(f"\nUpdated m1: {m1}")
+print(f"Updated m2: {m2}")
+
+Output:
+ 
+---------------------------Assignment No-08------------------------
+
+Title:- k medoid clustring
+
+
+import numpy as np
+import pandas as pd
+from sklearn_extra.cluster import KMedoids
+import matplotlib.pyplot as plt
+
+data = pd.read_csv('kmeans.csv')
+print(data)
+
+# Define the points
+points = data[['x', 'y']].to_numpy()
+
+# Initialize K-Medoids
+kmedoids = KMedoids(n_clusters=2, init='random', max_iter=100)
+
+# Fit the model to the data
+kmedoids.fit(points)
+
+# Get the final medoids
+final_medoids = kmedoids.cluster_centers_
+print("\nFinal medoids:")
+print("Medoid 1 (C1):", final_medoids[0])
+print("Medoid 2 (C2):", final_medoids[1])
+
+# Assignments
+assignments = kmedoids.labels_
+print("\nCluster assignments:")
+for cluster_num in range(kmedoids.n_clusters):
+    
+cluster_points = points[assignments == cluster_num]
+    print(f"\nCluster {cluster_num}:")
+    for point in cluster_points:
+        print(point)
+
+# Visualization
+plt.figure(figsize=(10, 6))
+plt.scatter(points[:, 0], points[:, 1], c=assignments, cmap='viridis', marker='o', label='Data Points')
+plt.scatter(final_medoids[:, 0], final_medoids[:, 1], color='red', marker='*', s=200, label='Medoids')
+plt.title('K-Medoids Clustering')
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+plt.legend()
+plt.grid()
+plt.show()
+
+Output: 
+ 
+--------------------------------Assignment No-09------------------------
+Title :-hierarchical Clustring 
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+
+data = pd.read_csv('MCustomers.csv')
+print("Mall Customers Dataset:")
+print(data.head())
+
+# Check if the required columns exist
+required_columns = ['CustomerID', 'Age', 'Spending Score']
+
+# features selection
+features = data[['Age', 'Spending Score']]
+
+# Check for missing values in the selected features
+if features.isnull().values.any():
+    print("\nMissing values found. Filling missing values with the mean.")
+    features = features.fillna(features.mean())
+
+if np.isinf(features).values.any():
+    print("\nInfinite values found. Replacing infinite values with the maximum finite value.")
+    max_values = features[features != np.inf].max()
+    features.replace([np.inf, -np.inf], max_values, inplace=True)
+
+# Convert features to a NumPy array
+features = features.to_numpy()
+
+# Perform hierarchical clustering using Ward's method
+Z = linkage(features, method='ward')
+
+# Cut the dendrogram to form flat clusters
+max_d = 15  # Maximum distance threshold
+clusters = fcluster(Z, max_d, criterion='distance')
+
+# Add clusters to the DataFrame
+data['Cluster'] = clusters
+print("\nMall Customers Data with Clusters:")
+print(data.head())
+
+# Plot the dendrogram
+plt.figure(figsize=(12, 7))
+dendrogram(Z, labels=data['CustomerID'].astype(str).values)
+plt.title('Hierarchical Clustering Dendrogram')
+plt.xlabel('Customer ID')
+plt.ylabel('Distance')
+plt.show()
+
+# Cluster Representation: Scatter Plot
+plt.figure(figsize=(12, 7))
+scatter = plt.scatter(data['Age'], data['Spending Score'], c=data['Cluster'], cmap='viridis', alpha=0.6)
+plt.title('Cluster Representation of Mall Customers')
+plt.xlabel('Age')
+plt.ylabel('Spending Score')
+plt.colorbar(scatter, label='Cluster Label')
+plt.show()
+
+Output:
+ 
+---------------------------------Assignment NO-10--------------
+Title :-Apriori Algorithm
+
+# Manually 
+import pandas as pd
+from itertools import combinations
+
+# Sample dataset of transactions
+transactions = [
+    ['Milk', 'Bread', 'Diaper'],
+    ['Bread', 'Diaper', 'Beer'],
+    ['Milk', 'Diaper', 'Beer', 'Cola'],
+    ['Milk', 'Bread', 'Diaper', 'Beer'],
+    ['Bread', 'Diaper', 'Cola'],
+    ['Milk', 'Bread', 'Diaper'],
+    ['Milk', 'Beer', 'Cola'],
+    ['Bread', 'Diaper', 'Beer', 'Milk'],
+    ['Bread', 'Cola'],
+    ['Milk', 'Diaper'],
+]
+
+# Define support and confidence thresholds
+support_threshold = 0.5 
+confidence_threshold = 0.6  
+
+#Applying apriori algoriathm manually
+print("\nManual Method..................")
+
+# Function to calculate support
+def calculate_support(itemset, transactions):
+    item_count = sum(1 for transaction in transactions if itemset.issubset(transaction))
+    return item_count / len(transactions)
+
+# Generate frequent itemsets using the Apriori algorithm
+def apriori(transactions, support_threshold):
+    frequent_itemsets = {}
+    one_itemsets = {frozenset([item]) for transaction in transactions for item in transaction}
+
+    # First pass to find single item support
+    for itemset in one_itemsets:
+        support = calculate_support(itemset, list(map(set, transactions)))  # Convert map to list
+        if support >= support_threshold:
+            frequent_itemsets[itemset] = support
+
+    current_itemsets = frequent_itemsets.copy()
+    k = 2
+
+    while current_itemsets:
+        candidate_itemsets = set(
+            frozenset(i.union(j)) for i in current_itemsets.keys() for j in current_itemsets.keys() if len(i.union(j)) == k
+        )
+        current_itemsets = {}
+
+        for itemset in candidate_itemsets:
+            support = calculate_support(itemset, list(map(set, transactions)))  # Convert map to list
+            if support >= support_threshold:
+                current_itemsets[itemset] = support
+
+        frequent_itemsets.update(current_itemsets)
+        k += 1
+
+    return frequent_itemsets
+
+# Generate frequent itemsets
+frequent_itemsets = apriori(transactions, support_threshold)
+
+# Generate association rules
+def generate_rules(frequent_itemsets, confidence_threshold):
+    rules = []
+    
+    for itemset in frequent_itemsets:
+        if len(itemset) > 1:  # Only consider itemsets with more than 1 item
+            for consequence in itemset:
+                antecedent = itemset - frozenset([consequence])
+                if antecedent:
+                    support_antecedent = frequent_itemsets[antecedent]
+                    support_itemset = frequent_itemsets[itemset]
+                    confidence = support_itemset / support_antecedent
+
+                    if confidence >= confidence_threshold:
+                        rules.append((antecedent, consequence, confidence))
+
+    return rules
+
+# Generate strong association rules
+strong_rules = generate_rules(frequent_itemsets, confidence_threshold)
+
+# Display results
+print("Frequent Itemsets:")
+for itemset, support in frequent_itemsets.items():
+    print(f"Itemset: {set(itemset)}, Support: {support:.2f}")
+
+print("\nStrong Association Rules:")
+for antecedent, consequence, confidence in strong_rules:
+    print(f"Rule: {set(antecedent)} -> {consequence}, Confidence: {confidence:.2f}")
+ 
+
+#using Built in function
+import pandas as pd
+from itertools import combinations
+from mlxtend.frequent_patterns import apriori, association_rules
+from mlxtend.preprocessing import TransactionEncoder
+
+# Sample dataset of transactions
+transactions = [
+    ['Milk', 'Bread', 'Diaper'],
+    ['Bread', 'Diaper', 'Beer'],
+    ['Milk', 'Diaper', 'Beer', 'Cola'],
+    ['Milk', 'Bread', 'Diaper', 'Beer'],
+    ['Bread', 'Diaper', 'Cola'],
+    ['Milk', 'Bread', 'Diaper'],
+    ['Milk', 'Beer', 'Cola'],
+    ['Bread', 'Diaper', 'Beer', 'Milk'],
+    ['Bread', 'Cola'],
+    ['Milk', 'Diaper'],
+]
+
+# Define support and confidence thresholds
+support_threshold = 0.5 
+confidence_threshold = 0.6
+
+#By Built in fuction
+print("----------------------------------------------------------------------")
+print("\nUsing built-in function................................. ")
+
+
+encoder = TransactionEncoder()
+onehot = encoder.fit(transactions).transform(transactions)
+df = pd.DataFrame(onehot, columns=encoder.columns_)
+
+# Generate frequent itemsets
+frequent_itemsets = apriori(df, min_support=support_threshold, use_colnames=True)
+
+# Generate association rules
+rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=confidence_threshold)
+
+# Display results
+print("\nFrequent Itemsets:")
+print(frequent_itemsets)
+
+print("\nStrong Association Rules:")
+print(rules[['antecedents', 'consequents', 'support', 'confidence']])
+ 
+
+
+
+
+ 
+ 
+
+ 
+ 
